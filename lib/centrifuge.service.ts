@@ -19,9 +19,12 @@ export class CentrifugeService {
     private readonly jwtService: JwtService
   ) {}
 
-  async generateUserToken(sub: string, channels: string[]) {
+  async generateUserToken(userId: string, channels: string[]) {
     const token = await this.jwtService.signAsync(
-      { sub, channels },
+      {
+        sub: userId,
+        channels: channels?.length > 0 ? channels : undefined,
+      },
       this.options.jwt
     );
 
