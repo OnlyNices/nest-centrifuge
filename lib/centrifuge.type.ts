@@ -1,4 +1,4 @@
-import { FactoryProvider } from '@nestjs/common';
+import { FactoryProvider } from "@nestjs/common";
 
 export type CentrifugeOptions = {
   centrifugeUrl: string;
@@ -12,17 +12,5 @@ export type CentrifugeOptions = {
 
 export type CentrifugeModuleAsyncOptions = Pick<
   FactoryProvider<CentrifugeOptions>,
-  'useFactory' | 'inject'
+  "useFactory" | "inject"
 >;
-
-export type CentrifugeAuthHeader = {
-  Authorization: string;
-};
-
-export type CentrifugePublishPayload = {
-  method: 'publish';
-  params: {
-    channel: string;
-    data: any;
-  };
-};
