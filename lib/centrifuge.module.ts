@@ -1,8 +1,12 @@
 import { DynamicModule, Global, Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
+import { CentClient } from "cent.js";
 
-import { CENTRIFUGE_OPTIONS } from "./centrifuge.constants";
-import { CentrifugeService } from "./centrifuge.service";
+import { CentrifugeAuthService } from "./centrifuge.service";
+import {
+  CENTRIFUGE_CLIENT,
+  CENTRIFUGE_JWT_OPTIONS,
+} from "./centrifuge.constants";
 import {
   CentrifugeModuleAsyncOptions,
   CentrifugeOptions,
@@ -17,12 +21,19 @@ export class CentrifugeModule {
       imports: [JwtModule.register({})],
       providers: [
         {
-          provide: CENTRIFUGE_OPTIONS,
-          useValue: opts,
+          provide: CENTRIFUGE_JWT_OPTIONS,
+          useValue: opts.jwt,
         },
-        CentrifugeService,
+        {
+          provide: CENTRIFUGE_CLIENT,
+          useValue: new CentClient({
+            url: opts.centrifugeUrl,
+            apiKey: opts.apiKey,
+          }),
+        },
+        CentrifugeAuthService,
       ],
-      exports: [CentrifugeService],
+      exports: [CENTRIFUGE_CLIENT, CentrifugeAuthService],
     };
   }
 
@@ -33,15 +44,26 @@ export class CentrifugeModule {
       providers: [
         {
           inject: opts.inject,
-          provide: CENTRIFUGE_OPTIONS,
+          provide: CENTRIFUGE_JWT_OPTIONS,
           useFactory: async (...args) => {
             const options = await opts.useFactory(...args);
-            return options;
+            return options.jwt;
           },
         },
-        CentrifugeService,
+        {
+          inject: opts.inject,
+          provide: CENTRIFUGE_CLIENT,
+          useFactory: async (...args) => {
+            const options = await opts.useFactory(...args);
+            return new CentClient({
+              url: options.centrifugeUrl,
+              apiKey: options.apiKey,
+            });
+          },
+        },
+        CentrifugeAuthService,
       ],
-      exports: [CentrifugeService],
+      exports: [CENTRIFUGE_CLIENT, CentrifugeAuthService],
     };
   }
 }

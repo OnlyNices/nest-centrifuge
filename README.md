@@ -11,24 +11,28 @@ npm install @onlynices/nest-centrifuge
 ## How To use
 
 ```ts
-import { CentrifugeService } from '@onlynices/nest-centrifuge';
-import { CentClient } from 'cent.js'
+import { CentrifugeAuthService, CentrifugeClient, CENTRIFUGE_CLIENT } from '@onlynices/nest-centrifuge';
+import { Inject } from '@nestjs/common';
 
 @Injectable()
 export class AppService { 
-  private readonly client: CentClient;
+  constructor(
+    @Inject(CENTRIFUGE_CLIENT)
+    private readonly centrifugeClient: CentrifugeClient,
+    private readonly centrifugeAuthService: CentrifugeAuthService
+    ) {}
 
-  constructor(private readonly centrifuge: CentrifugeService) {
-    this.client = centrifuge.client;
+  async createAuthToken(userId: number) {
+    const token = await this.centrifugeAuthService.generateUserToken(userId.toString(), ['chat']);
+    return token;
   }
 
-  getChannels() {
-    return this.client.channels({ pattern: "*" });
-
-    // or 
-
-    return this.centrifuge.client.channels({ pattern: "*" });
+  async getChannels() {
+    const channels = await this.centrifugeClient.channels({ pattern: "*" });
+    return channels;
   }
+
+  // ...
 }
 ```
 
